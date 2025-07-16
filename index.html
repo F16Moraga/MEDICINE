@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Medicina</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .semestre {
+      margin-bottom: 30px;
+    }
+    .semestre h2 {
+      color: #444;
+      margin-bottom: 10px;
+    }
+    .ramos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ramo {
+      border: 2px solid #007BFF;
+      background-color: #b3e5fc;
+      color: #000;
+      padding: 10px;
+      width: 180px;
+      height: 100px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 8px;
+      position: relative;
+      transition: 0.3s;
+    }
+    .ramo.bloqueado {
+      background-color: #ccc;
+      border: 2px solid #999;
+      cursor: not-allowed;
+      color: #666;
+    }
+    .ramo.aprobado {
+      background-color: #2196f3;
+      text-decoration: line-through;
+      color: white;
+    }
+    .tooltip {
+      visibility: hidden;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+    }
+    .ramo:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Medicina</h1>
+  <div id="contenedor"></div>
+
+  <script>
+    const malla = [
+      {
+        semestre: "Primer Semestre",
+        ramos: [
+          { nombre: "Introducción a la Profesión Médica", codigo: "MDN-111", creditos: 2 },
+          { nombre: "Bases Biológicas de la Medicina I", codigo: "MDN-112", creditos: 8 },
+          { nombre: "Química General y Orgánica", codigo: "MDN-113", creditos: 10 },
+          { nombre: "Metodología de la Investigación I", codigo: "MDN-114", creditos: 4 },
+          { nombre: "Taller de Aprendizaje Académico", codigo: "MDN-115", creditos: 3 },
+          { nombre: "Inglés I", codigo: "IFG-100", creditos: 3 }
+        ]
+      },
+      {
+        semestre: "Segundo Semestre",
+        ramos: [
+          { nombre: "Anatomía y Embriología I", codigo: "MDN-121", creditos: 10 },
+          { nombre: "Bases Biológicas de la Medicina II", codigo: "MDN-122", creditos: 7, prereqs: ["MDN-112"] },
+          { nombre: "Información y Comunicación Médica", codigo: "MDN-123", creditos: 3 },
+          { nombre: "Metodología de la Investigación II", codigo: "MDN-124", creditos: 4, prereqs: ["MDN-114"] },
+          { nombre: "Taller de Salud Comunitaria", codigo: "MDN-125", creditos: 3 },
+          { nombre: "Inglés II", codigo: "IFG-200", creditos: 2, prereqs: ["IFG-100"] }
+        ]
+      }
+      // Agrega aquí el resto de los semestres siguiendo el mismo formato
+    ];
+
+    const contenedor = document.getElementById('contenedor');
+    const completados = new Set();
+
+    function crearMalla() {
+      contenedor.innerHTML = '';
+      malla.forEach((sem) => {
+        const bloque = document.createElement('div');
+        bloque.className = 'semestre';
+        const titulo = document.createElement('h2');
+        titulo.textContent = sem.semestre;
+        const lista = document.createElement('div');
+        lista.className = 'ramos';
+
+        sem.ramos.forEach((ramo) => {
+          const div = document.createElement('div');
+          div.className = 'ramo';
+          div.textContent = ramo.nombre;
+
+          const tooltip = document.createElement('div');
+          tooltip.className = 'tooltip';
+          tooltip.textContent = `Código: ${ramo.codigo} | Créditos: ${ramo.creditos}`;
+          div.appendChild(tooltip);
+
+          const requisitos = ramo.prereqs || [];
+          const bloqueado = requisitos.some(req => !completados.has(req));
+          if (bloqueado) div.classList.add('bloqueado');
+
+          if (!bloqueado) {
+            div.addEventListener('click', () => {
+              if (div.classList.contains('aprobado')) {
+                div.classList.remove('aprobado');
+                completados.delete(ramo.codigo);
+              } else {
+                div.classList.add('aprobado');
+                completados.add(ramo.codigo);
+              }
+              crearMalla();
+            });
+          }
+
+          lista.appendChild(div);
+        });
+
+        bloque.appendChild(titulo);
+        bloque.appendChild(lista);
+        contenedor.appendChild(bloque);
+      });
+    }
+
+    crearMalla();
+  </script>
+</body>
+</html>
